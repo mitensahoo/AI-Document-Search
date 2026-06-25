@@ -1,0 +1,75 @@
+.history-sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 15px;
+}
+
+.history-sidebar h3 {
+  font-size: 1.3em;
+  margin-bottom: 15px;
+  color: white;
+}
+
+.history-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.no-history {
+  text-align: center;
+  color: #bdc3c7;
+  padding: 20px;
+  font-size: 0.9em;
+}
+
+.history-item {
+  padding: 10px;
+  margin-bottom: 8px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.history-item:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.history-item.selected {
+  background-color: #3498db;
+  border-left: 3px solid #2ecc71;
+}
+
+.history-message {
+  color: white;
+  font-weight: 500;
+  margin-bottom: 5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.history-time {
+  color: #bdc3c7;
+  font-size: 0.8em;
+}
+
+/* Scrollbar styling */
+.history-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.history-list::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 3px;
+}
+
+.history-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+}
+
+.history-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}

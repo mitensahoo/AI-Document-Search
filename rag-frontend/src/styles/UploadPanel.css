@@ -1,0 +1,73 @@
+.upload-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.upload-panel h2 {
+  color: #2c3e50;
+  margin-bottom: 20px;
+  font-size: 1.5em;
+}
+
+.upload-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  flex: 1;
+}
+
+.upload-form input[type="file"] {
+  padding: 10px;
+  border: 2px dashed #3498db;
+  border-radius: 4px;
+  background-color: #ecf0f1;
+  cursor: pointer;
+  font-size: 0.9em;
+}
+
+.upload-form input[type="file"]::file-selector-button {
+  background-color: #3498db;
+  color: white;
+  padding: 8px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.upload-form button {
+  padding: 12px;
+  background-color: #27ae60;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1em;
+  font-weight: bold;
+}
+
+.upload-form button:hover:not(:disabled) {
+  background-color: #229954;
+}
+
+.upload-form button:disabled {
+  background-color: #95a5a6;
+}
+
+.success-message {
+  padding: 10px;
+  background-color: #d5f4e6;
+  color: #27ae60;
+  border-left: 4px solid #27ae60;
+  border-radius: 4px;
+  margin-top: 10px;
+}
+
+.error-message {
+  padding: 10px;
+  background-color: #fadbd8;
+  color: #e74c3c;
+  border-left: 4px solid #e74c3c;
+  border-radius: 4px;
+  margin-top: 10px;
+}
