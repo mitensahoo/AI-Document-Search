@@ -8,44 +8,55 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class EmbeddingService {
 
-    @Value("${openai.api-key:}")
-    private String openaiApiKey;
+    @Value("${ollama.api-url:http://localhost:11434}")
+    private String ollamaApiUrl;
 
-    @Value("${openai.model:text-embedding-3-small}")
+    @Value("${ollama.api-key:}")
+    private String ollamaApiKey;
+
+    @Value("${ollama.embedding-model:llama2}")
     private String embeddingModel;
 
     private final HttpClient httpClient = HttpClient.newHttpClient();
     private final Gson gson = new Gson();
 
     public List<Double> embed(String text) throws IOException, InterruptedException {
-        if (openaiApiKey == null || openaiApiKey.isBlank()) {
-            throw new IllegalArgumentException("OpenAI API key not configured");
+        if (embeddingModel == null || embeddingModel.isBlank()) {
+            throw new IllegalArgumentException("Ollama embedding model not configured");
         }
 
         JsonObject requestBody = new JsonObject();
         requestBody.addProperty("model", embeddingModel);
-        requestBody.addProperty("input", text);
+        JsonArray inputArray = new JsonArray();
+        inputArray.add(text);
+        requestBody.add("input", inputArray);
 
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("https://api.openai.com/v1/embeddings"))
-                .header("Authorization", "Bearer " + openaiApiKey)
+        HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
+                .uri(URI.create(ollamaApiUrl + "/v1/embeddings"))
                 .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(requestBody.toString()))
-                .build();
+                .POST(HttpRequest.BodyPublishers.ofString(requestBody.toString()));
+
+        if (ollamaApiKey != null && !ollamaApiKey.isBlank()) {
+            requestBuilder.header("Authorization", "Bearer " + ollamaApiKey);
+        }
+
+        HttpRequest request = requestBuilder.build();
 
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
         if (response.statusCode() != 200) {
-            throw new RuntimeException("OpenAI API error: " + response.body());
+            throw new RuntimeException("Ollama API error: " + response.body());
         }
 
         JsonObject respObj = gson.fromJson(response.body(), JsonObject.class);

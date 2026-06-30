@@ -16,19 +16,19 @@ import java.util.List;
 @Service
 public class ChatService {
 
-    @Value("${openai.api-key:}")
-    private String openaiApiKey;
+    @Value("${ollama.api-url:http://localhost:11434}")
+    private String ollamaApiUrl;
 
-    @Value("${openai.gpt-model:gpt-4}")
+    @Value("${ollama.api-key:}")
+    private String ollamaApiKey;
+
+    @Value("${ollama.gpt-model:llama2}")
     private String gptModel;
 
     private final HttpClient httpClient = HttpClient.newHttpClient();
     private final Gson gson = new Gson();
 
     public String chat(String userMessage, List<String> contextChunks) throws IOException, InterruptedException {
-        if (openaiApiKey == null || openaiApiKey.isBlank()) {
-            throw new IllegalArgumentException("OpenAI API key not configured");
-        }
 
         // Build context from chunks
         StringBuilder contextBuilder = new StringBuilder();
@@ -60,23 +60,37 @@ public class ChatService {
 
         requestBody.add("messages", messages);
 
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("https://api.openai.com/v1/chat/completions"))
-                .header("Authorization", "Bearer " + openaiApiKey)
+        HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
+                .uri(URI.create(ollamaApiUrl + "/v1/chat/completions"))
                 .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(requestBody.toString()))
-                .build();
+                .POST(HttpRequest.BodyPublishers.ofString(requestBody.toString()));
+
+        if (ollamaApiKey != null && !ollamaApiKey.isBlank()) {
+            requestBuilder.header("Authorization", "Bearer " + ollamaApiKey);
+        }
+
+        HttpRequest request = requestBuilder.build();
 
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
         if (response.statusCode() != 200) {
-            throw new RuntimeException("GPT-4 API error: " + response.body());
+            throw new RuntimeException("Ollama API error: " + response.body());
         }
 
         JsonObject respObj = gson.fromJson(response.body(), JsonObject.class);
-        JsonArray choices = respObj.getAsJsonArray("choices");
-        JsonObject choice = choices.get(0).getAsJsonObject();
-        JsonObject message = choice.getAsJsonObject("message");
-        return message.get("content").getAsString();
+        if (respObj.has("choices")) {
+            JsonArray choices = respObj.getAsJsonArray("choices");
+            JsonObject choice = choices.get(0).getAsJsonObject();
+            JsonObject message = choice.getAsJsonObject("message");
+            if (message != null && message.has("content")) {
+                return message.get("content").getAsString();
+            }
+        }
+
+        if (respObj.has("output")) {
+            return respObj.get("output").getAsString();
+        }
+
+        throw new RuntimeException("Unable to parse Ollama response: " + response.body());
     }
 }
